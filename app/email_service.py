@@ -30,11 +30,31 @@ def send_email(
 
     message.set_content(body)
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+    try:
 
-        smtp.login(
-            sender_email,
-            app_password
-        )
+        with smtplib.SMTP_SSL(
+            "smtp.gmail.com",
+            465
+        ) as smtp:
 
-        smtp.send_message(message)
+            smtp.login(
+                sender_email,
+                app_password
+            )
+
+            email_sent = send_email(deposit.email,subject,body)
+
+            if not email_sent:
+
+                return {
+                    "message": "Failed to send reminder email",
+                    "certificate_no": deposit.certificate_no
+                }
+
+        return True
+
+    except Exception as error:
+
+        print("EMAIL ERROR:", error)
+
+        return False
