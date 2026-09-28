@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8001:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DATABASE_URL: postgresql://postgres:admin@host.docker.internal:5432/bank_deposits

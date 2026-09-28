@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import date
-
+from ..email_service import (
+    send_email,
+    create_deposit_reminder_email
+)
 from ..database import get_db
 from ..models import DepositDB
 from ..schemas import Deposit, DepositUpdate
-from ..email_service import send_email
+from ..auth_utils import get_current_user
 
 
 router = APIRouter(
@@ -14,14 +17,15 @@ router = APIRouter(
 )
 
 
-# -------------------------
-# Process automatic reminders
-# -------------------------
-
 @router.post("/process-reminders")
-def process_reminders(
-    db: Session = Depends(get_db)
+def process_reminders_endpoint(
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
+    return process_reminders(db)
+
+
+def process_reminders(db: Session):
 
     today = date.today()
 
@@ -42,22 +46,18 @@ def process_reminders(
         reminder_message = ""
 
         if days_until_maturity == 3:
-
             reminder_required = True
             reminder_message = "Deposit matures in 3 days."
 
         elif days_until_maturity == 2:
-
             reminder_required = True
             reminder_message = "Deposit matures in 2 days."
 
         elif days_until_maturity == 1:
-
             reminder_required = True
             reminder_message = "Deposit matures tomorrow."
 
         elif days_until_maturity == 0:
-
             reminder_required = True
             reminder_message = (
                 "Deposit matures today. "
@@ -65,7 +65,6 @@ def process_reminders(
             )
 
         elif days_until_maturity < 0:
-
             reminder_required = True
             reminder_message = (
                 "Deposit has matured and is still ACTIVE. "
@@ -80,25 +79,16 @@ def process_reminders(
 
         subject = "Bank Deposit Maturity Reminder"
 
-        body = f"""
-Hello,
-
-This is a reminder about your bank deposit.
-
-Bank: {deposit.bank}
-Certificate Number: {deposit.certificate_no}
-Amount: {deposit.amount}
-Interest Rate: {deposit.interest_rate}%
-Maturity Date: {deposit.maturity_date}
-Maturity Amount: {deposit.maturity_amount}
-
-{reminder_message}
-
-Please take the necessary action.
-
-Thank you.
-Bank Deposit Reminder System
-"""
+        body = create_deposit_reminder_email(
+    bank=deposit.bank,
+    certificate_no=deposit.certificate_no,
+    amount=deposit.amount,
+    interest_rate=deposit.interest_rate,
+    maturity_date=deposit.maturity_date,
+    maturity_amount=deposit.maturity_amount,
+    status=deposit.status,
+    reminder_message=reminder_message
+)
 
         email_sent = send_email(
             deposit.email,
@@ -131,16 +121,12 @@ Bank Deposit Reminder System
     }
 
 
-# -------------------------
-# Create deposit
-# -------------------------
-
 @router.post("")
 def create_deposit(
     deposit: Deposit,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
-
     existing_deposit = db.query(DepositDB).filter(
         DepositDB.certificate_no == deposit.certificate_no
     ).first()
@@ -171,28 +157,20 @@ def create_deposit(
     }
 
 
-# -------------------------
-# Get all deposits
-# -------------------------
-
 @router.get("")
 def get_deposits(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
-
     return db.query(DepositDB).all()
 
-
-# -------------------------
-# Delete deposit
-# -------------------------
 
 @router.delete("/{certificate_no}")
 def delete_deposit(
     certificate_no: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
-
     deposit = db.query(DepositDB).filter(
         DepositDB.certificate_no == certificate_no
     ).first()
@@ -212,17 +190,13 @@ def delete_deposit(
     }
 
 
-# -------------------------
-# Update deposit
-# -------------------------
-
 @router.patch("/{certificate_no}")
 def update_deposit(
     certificate_no: str,
     update: DepositUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
-
     deposit = db.query(DepositDB).filter(
         DepositDB.certificate_no == certificate_no
     ).first()
@@ -260,16 +234,12 @@ def update_deposit(
     }
 
 
-# -------------------------
-# Manual reminder
-# -------------------------
-
 @router.post("/{certificate_no}/remind")
 def send_reminder(
     certificate_no: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
-
     deposit = db.query(DepositDB).filter(
         DepositDB.certificate_no == certificate_no
     ).first()
@@ -288,23 +258,19 @@ def send_reminder(
 
     subject = "Bank Deposit Maturity Reminder"
 
-    body = f"""
-Hello,
-
-This is a reminder about your bank deposit.
-
-Bank: {deposit.bank}
-Certificate Number: {deposit.certificate_no}
-Amount: {deposit.amount}
-Interest Rate: {deposit.interest_rate}%
-Maturity Date: {deposit.maturity_date}
-Maturity Amount: {deposit.maturity_amount}
-
-Please check your deposit and take the necessary action.
-
-Thank you.
-Bank Deposit Reminder System
-"""
+    body = create_deposit_reminder_email(
+    bank=deposit.bank,
+    certificate_no=deposit.certificate_no,
+    amount=deposit.amount,
+    interest_rate=deposit.interest_rate,
+    maturity_date=deposit.maturity_date,
+    maturity_amount=deposit.maturity_amount,
+    status=deposit.status,
+    reminder_message=(
+        "Please check your deposit and "
+        "take the necessary action."
+    )
+)
 
     email_sent = send_email(
         deposit.email,
@@ -333,16 +299,12 @@ Bank Deposit Reminder System
     }
 
 
-# -------------------------
-# Mark deposit as collected
-# -------------------------
-
 @router.patch("/{certificate_no}/collected")
 def mark_collected(
     certificate_no: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
-
     deposit = db.query(DepositDB).filter(
         DepositDB.certificate_no == certificate_no
     ).first()

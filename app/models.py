@@ -18,3 +18,19 @@ class DepositDB(Base):
 
     last_reminder_date = Column(Date, nullable=True)
     email = Column(String, nullable=False)
+
+class UserDB(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    username = Column(
+        String,
+        unique=True,
+        nullable=False
+    )
+
+    hashed_password = Column(
+        String,
+        nullable=False
+    )

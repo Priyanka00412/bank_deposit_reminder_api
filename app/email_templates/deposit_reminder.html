@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bank Deposit Reminder</title>
+</head>
+
+<body style="
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    padding: 30px;
+">
+
+<div style="
+    max-width: 650px;
+    margin: auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+">
+
+    <h2>🏦 Bank Deposit Maturity Reminder</h2>
+
+    <p>Hello,</p>
+
+    <p>
+        This is a reminder about your bank deposit.
+    </p>
+
+    <table style="
+        width: 100%;
+        border-collapse: collapse;
+    ">
+
+        <tr>
+            <th style="
+                border: 1px solid #ddd;
+                padding: 10px;
+                text-align: left;
+            ">
+                Deposit Details
+            </th>
+
+            <th style="
+                border: 1px solid #ddd;
+                padding: 10px;
+                text-align: left;
+            ">
+                Information
+            </th>
+        </tr>
+
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                Bank
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                {{ bank }}
+            </td>
+        </tr>
+
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                Certificate Number
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                {{ certificate_no }}
+            </td>
+        </tr>
+
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                Amount
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                ₹{{ amount }}
+            </td>
+        </tr>
+
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                Interest Rate
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                {{ interest_rate }}%
+            </td>
+        </tr>
+
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                Maturity Date
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                {{ maturity_date }}
+            </td>
+        </tr>
+
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                Maturity Amount
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                ₹{{ maturity_amount }}
+            </td>
+        </tr>
+
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                Status
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 10px;">
+                {{ status }}
+            </td>
+        </tr>
+
+    </table>
+
+    <div style="
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f5f5f5;
+    ">
+
+        <strong>Reminder:</strong>
+
+        {{ reminder_message }}
+
+    </div>
+
+    <p>
+        Please take the necessary action.
+    </p>
+
+    <p>
+        Thank you.<br>
+        <strong>Bank Deposit Reminder System</strong>
+    </p>
+
+</div>
+
+</body>
+
+</html>
